@@ -1,0 +1,133 @@
+#include "fifteen.h"
+#include "ui_fifteen.h"
+
+Fifteen::Fifteen(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::Fifteen)
+{
+    ui->setupUi(this);
+
+    ui->btnSizeBox->setMinimum(70);
+    ui->btnSizeBox->setMaximum(110);
+    ui->layoutSizeBox->setMinimum(5);
+    ui->layoutSizeBox->setMaximum(15);
+
+    vec_btn.push_back(ui->btn1);
+    vec_btn.push_back(ui->btn2);
+    vec_btn.push_back(ui->btn3);
+    vec_btn.push_back(ui->btn4);
+    vec_btn.push_back(ui->btn5);
+    vec_btn.push_back(ui->btn6);
+    vec_btn.push_back(ui->btn7);
+    vec_btn.push_back(ui->btn8);
+    vec_btn.push_back(ui->btn9);
+    vec_btn.push_back(ui->btn10);
+    vec_btn.push_back(ui->btn11);
+    vec_btn.push_back(ui->btn12);
+    vec_btn.push_back(ui->btn13);
+    vec_btn.push_back(ui->btn14);
+    vec_btn.push_back(ui->btn15);
+
+    btn_width = ui->btn1->width();
+    btn_height = ui->btn1->height();
+
+    ui->gridLayout->setVerticalSpacing(5);
+    ui->gridLayout->setHorizontalSpacing(5);
+    foreach (auto var, vec_btn)
+     {
+         var->setFixedWidth(70);
+         var->setFixedHeight(70);
+     }
+
+     ResizeElement();
+
+    foreach (QPushButton * btn, vec_btn)
+    {
+        connect(btn, SIGNAL(clicked()), this, SLOT(Move()));
+    }
+}
+
+Fifteen::~Fifteen()
+{
+    delete ui;
+}
+
+void Fifteen::ResizeElement()
+{
+    foreach (auto var, vec_btn)
+    {
+        var->setFixedWidth(btn_width);
+        var->setFixedHeight(btn_height);
+    }
+    legal_coord.first = (btn_width + ui->gridLayout->verticalSpacing())*3 + ui->gridLayout->margin();
+    legal_coord.second = (btn_height + ui->gridLayout->horizontalSpacing())*3 + ui->gridLayout->margin();
+
+    gridLayout_width = btn_width * 4 + ui->gridLayout->spacing();
+    gridLayout_height = btn_height * 4 + ui->gridLayout->spacing();
+
+    ui->controlBox->setGeometry(gridLayout_width+50, 10, 160, 140);
+
+    this->setFixedSize(gridLayout_width + ui->controlBox->x(), gridLayout_height);
+}
+
+void Fifteen::Move()
+{
+    QPushButton *btn = qobject_cast<QPushButton *>(sender());
+    if(((btn->x() == legal_coord.first) || (btn->y() == legal_coord.second))
+            && (abs(btn->x() - legal_coord.first) <= (btn_height + ui->gridLayout->spacing()))
+            && (abs(btn->y() - legal_coord.second) <= (btn_width + ui->gridLayout->spacing())))
+    {
+        int tempX = legal_coord.first;
+        int tempY = legal_coord.second;
+        legal_coord.first = btn->x();
+        legal_coord.second = btn->y();
+        btn->setGeometry(tempX, tempY, btn_width, btn_height);
+    }
+}
+
+void Fifteen::on_btn_shufle_clicked()
+{
+    int tempXFirst;
+    int tempYFirst;
+    int tempXSecond;
+    int tempYSecond;
+    int rand_num;
+
+    srand(time(NULL));
+    for(int i = 0; i<COUNT_BTN; i++)
+    {
+        rand_num = rand()%COUNT_BTN;
+
+        tempXFirst = vec_btn[i]->x();
+        tempYFirst = vec_btn[i]->y();
+        tempXSecond = vec_btn[rand_num]->x();
+        tempYSecond = vec_btn[rand_num]->y();
+
+        vec_btn[i]->setGeometry(tempXSecond, tempYSecond, btn_width, btn_height);
+        vec_btn[rand_num]->setGeometry(tempXFirst, tempYFirst, btn_width, btn_height);
+    }
+    for(int i = 0; i<COUNT_BTN; i++)
+    {
+        if((vec_btn[i]->x() == ((btn_width + ui->gridLayout->verticalSpacing())*3 + ui->gridLayout->margin()))
+                && (vec_btn[i]->y() == ((btn_height + ui->gridLayout->horizontalSpacing())*3 + ui->gridLayout->margin())))
+        {
+            vec_btn[i]->setGeometry(legal_coord.first,  legal_coord.second, btn_width, btn_height);
+            legal_coord.first = (btn_width + ui->gridLayout->verticalSpacing())*3 + ui->gridLayout->margin();
+            legal_coord.second = (btn_height + ui->gridLayout->horizontalSpacing())*3 + ui->gridLayout->margin();
+        }
+    }
+}
+
+void Fifteen::on_btnSizeBox_valueChanged(int arg1)
+{
+
+    btn_width = arg1;
+    btn_height = arg1;
+    ResizeElement();
+}
+void Fifteen::on_layoutSizeBox_valueChanged(int size)
+{
+    ui->gridLayout->setVerticalSpacing(size);
+    ui->gridLayout->setHorizontalSpacing(size);
+    ResizeElement();
+}
